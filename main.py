@@ -1,10 +1,10 @@
 import pygame, sys, random, json
 from pygame.math import Vector2
 from operator import itemgetter
-
+from ia import *
 class SNAKE:
     def __init__(self):
-        self.body = [Vector2(7, 10), Vector2(6, 10), Vector2(5, 10)]
+        self.body = [Vector2(7, 0), Vector2(6, 0), Vector2(5, 0)]
         self.direction = Vector2(1, 0)
         self.new_block = False
 
@@ -69,10 +69,43 @@ class SNAKE:
                     elif previous_block.x == 1 and next_block.y == 1 or previous_block.y == 1 and next_block.x == 1:
                         screen.blit(self.body_br,block_rect)
     def reset(self):
-        self.body = [Vector2(7,10),Vector2(6,10),Vector2(5,10)]
-        self.direction = Vector2(1,0)
+        self.body = [Vector2(7,0),Vector2(6,0),Vector2(5,0)]
+        self.direction = Vector2(0,0)
 
     def snake_move(self):
+        if self.new_block:
+            body_copy = self.body[:]
+            body_copy.insert(0, body_copy[0] + self.direction)
+            self.body = body_copy
+            self.new_block = False
+        else:
+            body_copy = self.body[:-1]
+            body_copy.insert(0, body_copy[0] + self.direction)
+            self.body = body_copy
+    def snake_move_ia(self):
+        if self.body[0].x == 0 and self.body[0].y == 0:
+            self.direction = Vector2(1, 0)
+
+        if self.body[0].x == 19 and self.body[0].y == 0:
+            self.direction = Vector2(0, 1)
+        
+        # Loop bottom
+        if self.body[0].x % 2 != 0 and self.body[0].y == 1:
+            self.direction = Vector2(0, 1)
+
+        if self.body[0].x == 0 and self.body[0].y == 1:
+            self.direction = Vector2(0, -1)
+
+        elif self.body[0].x % 2 == 0 and self.body[0].y == 1:
+            self.direction = Vector2(-1, 0)
+
+        # Loop top
+        if self.body[0].x % 2 != 0 and self.body[0].y == 19:
+            self.direction = Vector2(-1, 0)
+            
+        if self.body[0].x % 2 == 0 and self.body[0].y == 19:
+            self.direction = Vector2(0, -1)
+        
         if self.new_block:
             body_copy = self.body[:]
             body_copy.insert(0, body_copy[0] + self.direction)
@@ -158,7 +191,6 @@ class SCOREBOARD:
             scoreboard_value_y += 25
     def update_score(self, name, score):
         if name in self.scores_dic:
-            print(":", name, ":")
             self.scores_dic[name] += score
         else:
             self.scores_dic[name] = score
@@ -178,8 +210,14 @@ class MAIN:
         self.player_name = str()
         self.is_name = False
         self.name_not_empty = False
+        self.play_ia = False
+        self.speed = 100
+
     def loop(self):
-        self.snake.snake_move()
+        if self.play_ia:
+            self.snake.snake_move_ia()
+        else:
+            self.snake.snake_move()
         self.check_contacts()
     
     def draw_components(self):
@@ -203,7 +241,8 @@ class MAIN:
                 self.fruit.random_fruit()
             if block == self.snake.body[0]:
                 self.game_end()
-
+        if int(self.score) == 397:
+            self.game_end()
     def draw_grass(self):
         for row in range(CELL_NUMBER):
             if row % 2 == 0: 
@@ -228,8 +267,16 @@ class MAIN:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                 self.player_name = "".join(self.name_input)
                 self.is_name = True
+                if self.player_name == "ia":
+                    self.play_ia = True
+                    self.snake.direction = Vector2(1, 0)
+                    self.speed = 1
+                else:
+                    self.snake.direction = Vector2(1, 0)
+                    self.speed = 100
             if event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
                 self.name_input = self.name_input[:-1]
+            
     def game_end(self):
         self.is_name = False
         if self.name_not_empty:
@@ -250,7 +297,6 @@ class MAIN:
             screen.blit(score_aff, score_aff_rect)
         
 pygame.init()
-
 # Dimensions
 CELL_NUMBER = 20
 CELL_SIZE = 40
@@ -266,7 +312,7 @@ screen = pygame.display.set_mode((CELL_NUMBER * CELL_SIZE + 303 , CELL_NUMBER * 
 main = MAIN()
 
 SCREEN_UPDATE = pygame.USEREVENT
-pygame.time.set_timer(SCREEN_UPDATE, 100)
+pygame.time.set_timer(SCREEN_UPDATE, main.speed)
 
 run = True
 while run:

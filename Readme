@@ -1,0 +1,6 @@
+Voici le fameux snake avec une ia intégrée.
+
+Il permet de jouet au joueur de manipuler un serpent en utilisant les flèches directionnelles.
+Vous devrez rentré votre nom pour pouvoir jouer et obtenir un score à la fin de la partie mais vous pouvez aussi appuyer directement sur la touche "entrer" pour jouer en anonyme.
+Le but est de manger le plus de fruits possibles sans se mordre la queue ou rentre dans un mur.
+J'ai aussi programmer un chemin qui permet à une "IA" de terminer le jeu. Pour faire jouer l'IA, il faut rentre comme nom d'utilisateur "ia".
