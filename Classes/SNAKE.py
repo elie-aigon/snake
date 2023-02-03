@@ -87,39 +87,6 @@ class SNAKE:
             body_copy = self.body[:-1]
             body_copy.insert(0, body_copy[0] + self.direction)
             self.body = body_copy
-    def snake_move_ia(self):
-        if self.body[0].x == 0 and self.body[0].y == 0:
-            self.direction = Vector2(1, 0)
-
-        if self.body[0].x == 19 and self.body[0].y == 0:
-            self.direction = Vector2(0, 1)
-        
-        # Loop bottom
-        if self.body[0].x % 2 != 0 and self.body[0].y == 1:
-            self.direction = Vector2(0, 1)
-
-        if self.body[0].x == 0 and self.body[0].y == 1:
-            self.direction = Vector2(0, -1)
-
-        elif self.body[0].x % 2 == 0 and self.body[0].y == 1:
-            self.direction = Vector2(-1, 0)
-
-        # Loop top
-        if self.body[0].x % 2 != 0 and self.body[0].y == 19:
-            self.direction = Vector2(-1, 0)
-            
-        if self.body[0].x % 2 == 0 and self.body[0].y == 19:
-            self.direction = Vector2(0, -1)
-        
-        if self.new_block:
-            body_copy = self.body[:]
-            body_copy.insert(0, body_copy[0] + self.direction)
-            self.body = body_copy
-            self.new_block = False
-        else:
-            body_copy = self.body[:-1]
-            body_copy.insert(0, body_copy[0] + self.direction)
-            self.body = body_copy
 
     def add_block(self):
         self.new_block = True

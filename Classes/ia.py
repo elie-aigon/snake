@@ -2,10 +2,15 @@ import pygame, sys, random, json
 from pygame.math import Vector2
 from operator import itemgetter
 
-class SNAKE:
-    def __init__(self):
+class SNAKE_IA:
+    def __init__(self, surface, CELL_SIZE, CELL_NUMBER):
+        self.CELL_SIZE = CELL_SIZE
+        self.CELL_NUMBER = CELL_NUMBER
+
+        self.screen = surface
         self.body = [Vector2(7, 0), Vector2(6, 0), Vector2(5, 0)]
         self.direction = Vector2(1, 0)
+
         self.new_block = False
 
         self.head_up = pygame.image.load('Images/head_up.png').convert_alpha()
@@ -26,7 +31,7 @@ class SNAKE:
         self.body_br = pygame.image.load('Images/body_br.png').convert_alpha()
         self.body_bl = pygame.image.load('Images/body_bl.png').convert_alpha()
 
-        self.crunch_sound = pygame.mixer.Sound('crunch.wav')
+        self.crunch_sound = pygame.mixer.Sound('Sounds/crunch.wav')
 
     def update_head_graphics(self):
         head_relation = self.body[1] - self.body[0]
@@ -47,41 +52,31 @@ class SNAKE:
         self.update_tail_graphics()
 
         for index,block in enumerate(self.body):
-            block_rect = pygame.Rect(block.x * CELL_SIZE,block.y * CELL_SIZE,CELL_SIZE,CELL_SIZE)
+            block_rect = pygame.Rect(block.x * self.CELL_SIZE,block.y * self.CELL_SIZE, self.CELL_SIZE, self.CELL_SIZE)
             if index == 0:
-                screen.blit(self.head,block_rect)
+                self.screen.blit(self.head,block_rect)
             elif index == len(self.body) - 1:
-                screen.blit(self.tail,block_rect)
+                self.screen.blit(self.tail,block_rect)
             else:
                 previous_block = self.body[index + 1] - block
                 next_block = self.body[index - 1] - block
                 if previous_block.x == next_block.x:
-                    screen.blit(self.body_vertical,block_rect)
+                    self.screen.blit(self.body_vertical,block_rect)
                 elif previous_block.y == next_block.y:
-                    screen.blit(self.body_horizontal,block_rect)
+                    self.screen.blit(self.body_horizontal,block_rect)
                 else:
                     if previous_block.x == -1 and next_block.y == -1 or previous_block.y == -1 and next_block.x == -1:
-                        screen.blit(self.body_tl,block_rect)
+                        self.screen.blit(self.body_tl,block_rect)
                     elif previous_block.x == -1 and next_block.y == 1 or previous_block.y == 1 and next_block.x == -1:
-                        screen.blit(self.body_bl,block_rect)
+                        self.screen.blit(self.body_bl,block_rect)
                     elif previous_block.x == 1 and next_block.y == -1 or previous_block.y == -1 and next_block.x == 1:
-                        screen.blit(self.body_tr,block_rect)
+                        self.screen.blit(self.body_tr,block_rect)
                     elif previous_block.x == 1 and next_block.y == 1 or previous_block.y == 1 and next_block.x == 1:
-                        screen.blit(self.body_br,block_rect)
+                        self.screen.blit(self.body_br,block_rect)
     def reset(self):
         self.body = [Vector2(7,0),Vector2(6,0),Vector2(5,0)]
-        self.direction = Vector2(1,0)
+        self.direction = Vector2(0,0)
 
-    def snake_move(self):
-        if self.new_block:
-            body_copy = self.body[:]
-            body_copy.insert(0, body_copy[0] + self.direction)
-            self.body = body_copy
-            self.new_block = False
-        else:
-            body_copy = self.body[:-1]
-            body_copy.insert(0, body_copy[0] + self.direction)
-            self.body = body_copy
     def snake_move_ia(self):
         if self.body[0].x == 0 and self.body[0].y == 0:
             self.direction = Vector2(1, 0)
@@ -105,7 +100,7 @@ class SNAKE:
             
         if self.body[0].x % 2 == 0 and self.body[0].y == 19:
             self.direction = Vector2(0, -1)
-
+        
         if self.new_block:
             body_copy = self.body[:]
             body_copy.insert(0, body_copy[0] + self.direction)
@@ -115,10 +110,9 @@ class SNAKE:
             body_copy = self.body[:-1]
             body_copy.insert(0, body_copy[0] + self.direction)
             self.body = body_copy
-
+            
     def add_block(self):
         self.new_block = True
     
     def play_crunch_sound(self):
 	    self.crunch_sound.play()
-        

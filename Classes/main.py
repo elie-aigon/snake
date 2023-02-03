@@ -5,10 +5,12 @@ from operator import itemgetter
 from BUTTON import BUTTON
 from FRUIT import FRUIT
 from SNAKE import SNAKE
+from ia import SNAKE_IA
 from SCOREBOARD import SCOREBOARD
 
 class MAIN:
     def __init__(self):
+        self.snake_ia = SNAKE_IA(screen, CELL_SIZE, CELL_NUMBER)
         self.snake = SNAKE(screen, CELL_SIZE, CELL_NUMBER)
         self.fruit = FRUIT(screen, 'Images/apple.png', CELL_SIZE, CELL_NUMBER)
         self.scoreboard = SCOREBOARD(screen,font, grey, green_font)
@@ -19,38 +21,59 @@ class MAIN:
         self.is_name = False
         self.name_not_empty = False
         self.play_ia = False
-
+        self.count = 0
 
     def loop(self):
         if self.play_ia:
-            self.snake.snake_move_ia()
+            self.snake_ia.snake_move_ia()
+            self.check_contacts(self.snake_ia.body)
         else:
             self.snake.snake_move()
-        self.check_contacts()
+            self.check_contacts(self.snake.body)
+                
+        # cette section permet de gérer la vitesse mais je trouve ca pas ouf encore
+        #
+        # if self.play_ia:
+        #     self.snake_ia.snake_move_ia()
+        #     self.check_contacts(self.snake_ia.body)
+        # else:
+        #     if self.count % 50 == 0:
+        #         self.snake.snake_move()
+        #         self.check_contacts(self.snake.body)
+        #         self.count += 1
+        #     else:
+        #         self.count += 1
     
     def draw_components(self):
         self.draw_grass()
         self.button_restart.draw_buttons()
         self.button_quit.draw_buttons()
-        self.snake.draw_snake()
+        if self.play_ia:
+            self.snake_ia.draw_snake()
+        else:
+            self.snake.draw_snake()
         self.fruit.draw_fruit()
         self.scoreboard.draw_scoreboard()
         self.draw_score()
         
-    def check_contacts(self):
-        if self.fruit.pos == self.snake.body[0]:
+    def check_contacts(self,body):
+        if self.fruit.pos == body[0]:
             self.fruit.random_fruit()
-            self.snake.add_block()
+            if self.play_ia:
+                self.snake_ia.add_block()
+            else:
+                self.snake.add_block()
             self.snake.play_crunch_sound()
-        if not 0 <= self.snake.body[0].x < CELL_NUMBER or not 0 <= self.snake.body[0].y < CELL_NUMBER:
+        if not 0 <= body[0].x < CELL_NUMBER or not 0 <= body[0].y < CELL_NUMBER:
             self.game_end()
-        for block in self.snake.body[1:]:
+        for block in body[1:]:
             if block == self.fruit.pos:
                 self.fruit.random_fruit()
-            if block == self.snake.body[0]:
+            if block == body[0]:
                 self.game_end()
         if int(self.score) == 397:
             self.game_end()
+
     def draw_grass(self):
         for row in range(CELL_NUMBER):
             if row % 2 == 0: 
@@ -77,7 +100,7 @@ class MAIN:
                 self.is_name = True
                 if self.player_name == "ia":
                     self.play_ia = True
-                    self.snake.direction = Vector2(1, 0)
+                    self.snake_ia.direction = Vector2(1, 0)
  
                 else:
                     self.snake.direction = Vector2(1, 0)
@@ -91,6 +114,7 @@ class MAIN:
             self.scoreboard.update_score(self.player_name, int(self.score))
         self.name_not_empty = False
         self.snake.reset()
+        self.snake_ia.reset()
         self.name_input = []
         self.game_start()
 
@@ -100,10 +124,16 @@ class MAIN:
         name_aff_rect = pygame.Rect(925, 500, 50, 50)
         screen.blit(name_aff, name_aff_rect)
         if self.is_name:
-            self.score = str(len(self.snake.body) - 3)
-            score_aff = font.render(self.score, True, grey)
-            score_aff_rect = pygame.Rect(945, 550, 50, 50)
-            screen.blit(score_aff, score_aff_rect)
+            if self.play_ia:
+                self.score = str(len(self.snake_ia.body) - 3)
+                score_aff = font.render(self.score, True, grey)
+                score_aff_rect = pygame.Rect(945, 550, 50, 50)
+                screen.blit(score_aff, score_aff_rect)
+            else:
+                self.score = str(len(self.snake.body) - 3)
+                score_aff = font.render(self.score, True, grey)
+                score_aff_rect = pygame.Rect(945, 550, 50, 50)
+                screen.blit(score_aff, score_aff_rect)
         
 pygame.init()
 # Dimensions
@@ -122,7 +152,7 @@ screen = pygame.display.set_mode((CELL_NUMBER * CELL_SIZE + 303 , CELL_NUMBER * 
 main = MAIN()
 
 SCREEN_UPDATE = pygame.USEREVENT
-pygame.time.set_timer(SCREEN_UPDATE, 1)
+pygame.time.set_timer(SCREEN_UPDATE, 100)
 
 run = True
 while run:
