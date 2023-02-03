@@ -185,6 +185,7 @@ while run:
                     sys.exit()
                 if main.button_restart.is_clicked(mouse_pos):
                     main.snake.reset()
+                    main.snake_ia.reset()
     screen.fill(green_bg)
     main.draw_components()
     pygame.display.update()
